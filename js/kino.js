@@ -9,7 +9,7 @@
       // Create the scene and set the scene size.
       scene = new THREE.Scene();
       var WIDTH = window.innerWidth,
-          HEIGHT = window.innerHeight;
+      HEIGHT = window.innerHeight;
 
       // Create a renderer and add it to the DOM.
       renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
@@ -26,26 +26,26 @@
       // Create an event listener that resizes the renderer with the browser window.
       window.addEventListener('resize', function() {
         var WIDTH = window.innerWidth,
-            HEIGHT = window.innerHeight;
+        HEIGHT = window.innerHeight;
         renderer.setSize(WIDTH, HEIGHT);
         camera.aspect = WIDTH / HEIGHT;
         camera.updateProjectionMatrix();
       });
 
-    var material = new THREE.LineBasicMaterial({
+      var material = new THREE.LineBasicMaterial({
         color: 0x0000ff
-    });
-    var geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3(0, 10, 0));
-    geometry.vertices.push(new THREE.Vector3(10, 0, 0));
-    geometry.vertices.push(new THREE.Vector3(0, 0, 0));
-    var line = new THREE.Line(geometry, material);
+      });
+      var geometry = new THREE.Geometry();
+      geometry.vertices.push(new THREE.Vector3(0, 10, 0));
+      geometry.vertices.push(new THREE.Vector3(10, 0, 0));
+      geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+      var line = new THREE.Line(geometry, material);
 
-    scene.add(line);
+      scene.add(line);
 
       // Create a light, set its position, and add it to the scene.
-var light = new THREE.AmbientLight( 0x404040 ); // soft white light
-scene.add( light );
+      var light = new THREE.AmbientLight( 0x404040 ); // soft white light
+      scene.add( light );
 
       // Add OrbitControls so that we can pan around with the mouse.
       controls = new THREE.OrbitControls(camera, renderer.domElement);
