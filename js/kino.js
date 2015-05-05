@@ -47,19 +47,29 @@
         light.shadowMapHeight = 2048;
 
         scene.add( light );
-
         var material = new THREE.LineBasicMaterial({
-          color: 0x0000ff
-         });
+        color: 0x0000ff
+    });
+      var geometry = new THREE.Geometry();
+      var hand = new THREE.Vector3(0, 10, 0);
+      var elbow = new THREE.Vector3(10, 0, 0);
+      var pivot = new THREE.Vector3(0, 0, 0);
+      geometry.vertices.push(hand);
+      geometry.vertices.push(elbow);
+      geometry.vertices.push(pivot);
+      var line = new THREE.Line(geometry, material);
 
-        var geometry = new THREE.Geometry();
-        geometry.vertices.push(new THREE.Vector3(-10, 0, 0));
-        geometry.vertices.push(new THREE.Vector3(0, 10, 0));
-        geometry.vertices.push(new THREE.Vector3(10, 0, 0));
-        var line = new THREE.Line(geometry, material);
-        scene.add(line);
-        objects.push(line);
+      var sphereParent = new THREE.Object3D();
+      var sphereGeometry = new THREE.SphereGeometry( 2, 32, 32 );
+      var sphereMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+      var sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
+      sphereParent.add( sphere );
+      sphereParent.position.set(hand.x, hand.y, hand.z);
+      scene.add(sphereParent);
 
+      scene.add(line);
+      objects.push(sphereParent);
+      objects.push(sphere);
         plane = new THREE.Mesh(
           new THREE.PlaneBufferGeometry( 2000, 2000, 8, 8 ),
           new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true } )
@@ -193,9 +203,6 @@
           SELECTED = null;
 
         }
-
-        container.style.cursor = 'auto';
-
       }
 
       //
