@@ -3,7 +3,7 @@ var scene, camera, renderer;
 init();
 animate();
 
-var mouseX = 0, mouseY = 0;
+var mouse = new THREE.Vector2();
 
 var windowHalfX = window.innerWidth / 2;
 var windowHalfY = window.innerHeight / 2;
@@ -43,10 +43,21 @@ function init() {
     });
 
     var geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3(0, 10, 0));
-    geometry.vertices.push(new THREE.Vector3(10, 0, 0));
-    geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+    var hand = new THREE.Vector3(0, 10, 0);
+    var elbow = new THREE.Vector3(10, 0, 0);
+    var pivot = new THREE.Vector3(0, 0, 0);
+    geometry.vertices.push(hand);
+    geometry.vertices.push(elbow);
+    geometry.vertices.push(pivot);
     var line = new THREE.Line(geometry, material);
+
+    var sphereParent = new THREE.Object3D();
+    var sphereGeometry = new THREE.SphereGeometry( 2, 32, 32 );
+    var sphereMaterial = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+    var sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
+    sphereParent.add( sphere );
+    sphereParent.position.set(hand.x, hand.y, hand.z);
+    scene.add(sphereParent);
 
     scene.add(line);
 
@@ -74,7 +85,7 @@ function animate() {
 }
 
 function onDocumentMouseMove( event ) {
-    mouseX = event.clientX - windowHalfX;
-    mouseY = event.clientY - windowHalfY;
-    console.log(mouseX, mouseY);
+    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+    console.log(mouse.x, mouse.y);
 }
