@@ -19,13 +19,9 @@
 
       // Create a camera, zoom it out from the model a bit, and add it to the scene.
       camera = new THREE.PerspectiveCamera(75, WIDTH / HEIGHT, 0.1, 20000);
-      camera.position.set(0,10,0);
+      camera.position.set(0, 0, -20);
       scene.add(camera);
 
-    var geometry = new THREE.BoxGeometry( 5, 5, 5 );
-    var material = new THREE.MeshLambertMaterial( { color: 0xFF0000 } );
-    var mesh = new THREE.Mesh( geometry, material );
-    scene.add( mesh );
 
       // Create an event listener that resizes the renderer with the browser window.
       window.addEventListener('resize', function() {
@@ -36,6 +32,16 @@
         camera.updateProjectionMatrix();
       });
 
+    var material = new THREE.LineBasicMaterial({
+        color: 0x0000ff
+    });
+    var geometry = new THREE.Geometry();
+    geometry.vertices.push(new THREE.Vector3(0, 10, 0));
+    geometry.vertices.push(new THREE.Vector3(10, 0, 0));
+    geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+    var line = new THREE.Line(geometry, material);
+
+    scene.add(line);
 
       // Create a light, set its position, and add it to the scene.
 var light = new THREE.AmbientLight( 0x404040 ); // soft white light
