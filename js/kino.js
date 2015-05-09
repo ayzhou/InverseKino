@@ -11,6 +11,7 @@ var mouse = new THREE.Vector2(),
 
 init();
 animate();
+makeJacobian();
 
 function init() {
 
@@ -210,4 +211,30 @@ function render() {
     controls.update();
     renderer.render(scene, camera);
 
+}
+
+function makeJacobian() {
+    var joints = [];
+    for (var i = 0; i < 3; i++) {
+        joints[i] = new THREE.Vector3(i,0,0);
+    }
+
+    var thetas = [];
+    var jacobian = Matrix.create();
+    var n = 2;
+    var s = new THREE.Vector3(0,0,0); // end effector position
+    var endEffector = new THREE.Vector3(0,0,0); // target position
+    // var e = endEffector.clone().sub(s); // desired changed in end effector position
+
+    for (var i = 0; i < n; i++) {
+        var position = joints[i].position; // joint position
+        var axis = new THREE.Vector3(0,0,1); // axis of rotation (for us, directly out of screen)
+        var q = position.clone().sub(endEffector); // vector from joint position to end effector
+        var temp = a.clone().cross(q);
+        var tempM = Matrix.create([temp.x],[temp.y],[temp.z]);
+        console.log(temp);
+        jacobian.augment(temp);
+    }
+
+    console.log(jacobian);
 }
