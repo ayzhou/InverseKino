@@ -123,7 +123,24 @@ function updateArms(x, y) {
         }
         arms[i].geometry.verticesNeedUpdate = true;
     }
+}
 
+/*function calcAngles(armNum) {
+  var vertices = arms[armNum].geometry.vertices;
+  var angles = [];
+
+  var prevVector = new THREE.Vector3(1, 0, 0);
+  for (var i = 1; i < vertices.length; i++) {
+    var currentVector = vertices[i].clone().sub(vertices[i-1]).normalize();
+    var angle = currentVector.angleTo()
+  }
+
+
+}*/
+
+function calcPseudoInverse(matrix) {
+    var pseudoinverse = matrix.clone().transpose().multiply(matrix).inverse().multiply(matrix);
+    return pseudoinverse;
 }
 
 function onWindowResize() {
@@ -131,7 +148,6 @@ function onWindowResize() {
     camera.updateProjectionMatrix();
 
     renderer.setSize(window.innerWidth, window.innerHeight);
-
 }
 
 function onDocumentMouseMove(event) {
@@ -140,7 +156,6 @@ function onDocumentMouseMove(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     //
-
     raycaster.setFromCamera(mouse, camera);
 
     if (SELECTED) {
