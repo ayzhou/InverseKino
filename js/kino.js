@@ -3,6 +3,8 @@ var camera, controls, scene, renderer;
 var objects = [],
     plane;
 var arms = [];
+var angles = [];
+var radius = [];
 
 var raycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2(),
@@ -49,6 +51,8 @@ function init() {
     light.shadowMapHeight = 2048;
 
     scene.add(light);
+
+    //add arms
     var material = new THREE.LineBasicMaterial({
         color: 0x0000ff
     });
@@ -60,7 +64,18 @@ function init() {
     geometry.vertices.push(elbow);
     geometry.vertices.push(pivot);
     var line = new THREE.Line(geometry, material);
+    scene.add(line);
+    arms.push(line)
 
+    //calc angles
+
+    for (var i = 0; i < arms.length; i++) {
+      angles.push(calcAngles(i));
+    }
+
+    console.log(angles);
+
+    //add sphere
     var sphereParent = new THREE.Object3D();
     var sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
     var sphereMaterial = new THREE.MeshBasicMaterial({
@@ -70,9 +85,6 @@ function init() {
     sphereParent.add(sphere);
     sphereParent.position.set(hand.x, hand.y, hand.z);
     scene.add(sphereParent);
-
-    scene.add(line);
-    arms.push(line)
     objects.push(sphere);
     plane = new THREE.Mesh(
     new THREE.PlaneBufferGeometry(2000, 2000, 8, 8),
@@ -126,18 +138,19 @@ function updateArms(x, y) {
     }
 }
 
-/*function calcAngles(armNum) {
+function calcAngles(armNum) {
   var vertices = arms[armNum].geometry.vertices;
   var angles = [];
 
   var prevVector = new THREE.Vector3(1, 0, 0);
   for (var i = 1; i < vertices.length; i++) {
     var currentVector = vertices[i].clone().sub(vertices[i-1]).normalize();
-    var angle = currentVector.angleTo()
+    var angle = prevVector.angleTo(currentVector);
+    angles.push(angle);
+    prevVector = currentVector;
   }
-
-
-}*/
+  return angles;
+}
 
 function calcPseudoInverse(matrix) {
     var pseudoinverse = matrix.clone().transpose().multiply(matrix).inverse().multiply(matrix);
