@@ -13,7 +13,6 @@ var mouse = new THREE.Vector2(),
 
 init();
 animate();
-makeJacobian();
 
 function init() {
 
@@ -132,8 +131,9 @@ function updateArms(x, y) {
     for (var i = 0; i < arms.length; i++) {
         var vertices = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 10, 0), new THREE.Vector3(0, 20, 0)];
         for (var j = 0; j < vertices.length; j++) {
-            arms[i].geometry.vertices[j] = vertices[j];
+            arms[i].geometry.vertices = vertices[j];
         }
+        makeJacobian(vertices);
         arms[i].geometry.verticesNeedUpdate = true;
     }
 }
@@ -241,28 +241,31 @@ function render() {
 
 }
 
-function makeJacobian() {
-    var joints = [];
-    for (var i = 0; i < 3; i++) {
-        joints[i] = new THREE.Vector3(i,0,0);
-    }
+function makeJacobian(joints) {
+    console.log(joints);
 
     var thetas = [];
-    var jacobian = $M();
-    var n = 2;
+    var jacobian;
+    var n = 3;
     var s = new THREE.Vector3(0,0,0); // end effector position
     var endEffector = new THREE.Vector3(0,0,0); // target position
     // var e = endEffector.clone().sub(s); // desired changed in end effector position
 
     for (var i = 0; i < n; i++) {
-        var position = joints[i].position; // joint position
+        var position = joints[i]; // joint position
         var axis = new THREE.Vector3(0,0,1); // axis of rotation (for us, directly out of screen)
         var q = position.clone().sub(endEffector); // vector from joint position to end effector
-        var temp = a.clone().cross(q);
-        var tempM = $M([temp.x],[temp.y],[temp.z]);
-        console.log(temp);
-        jacobian.augment(temp);
-    }
+        
+        var temp = axis.clone().cross(q);
+        var tempM = Matrix.create([[temp.x],[temp.y],[temp.z]]);
 
+        if (jacobian == null) {
+            jacobian = tempM;
+        }
+        else {
+            jacobian = jacobian.augment(tempM);
+        }
+    }
+    return jacobian;
     console.log(jacobian);
 }
