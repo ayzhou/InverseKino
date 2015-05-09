@@ -114,17 +114,37 @@ function init() {
     window.addEventListener('resize', onWindowResize, false);
 
 }
-
-function updateArms(x, y) {
+    
+function initArms() {
     for (var i = 0; i < arms.length; i++) {
         var vertices = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 10, 0), new THREE.Vector3(0, 20, 0)];
         for (var j = 0; j < vertices.length; j++) {
             arms[i].geometry.vertices = vertices[j];
         }
-        makeJacobian(vertices);
-        arms[i].geometry.verticesNeedUpdate = true;
+    arms[i].geometry.verticesNeedUpdate = true;
     }
+}
+function updateArms(x, y) {
+    makeJacobian(vertices);
+    arms[i].geometry.verticesNeedUpdate = true;
+}
 
+/*function calcAngles(armNum) {
+  var vertices = arms[armNum].geometry.vertices;
+  var angles = [];
+
+  var prevVector = new THREE.Vector3(1, 0, 0);
+  for (var i = 1; i < vertices.length; i++) {
+    var currentVector = vertices[i].clone().sub(vertices[i-1]).normalize();
+    var angle = currentVector.angleTo()
+  }
+
+
+}*/
+
+function calcPseudoInverse(matrix) {
+    var pseudoinverse = matrix.clone().transpose().multiply(matrix).inverse().multiply(matrix);
+    return pseudoinverse;
 }
 
 function onWindowResize() {
@@ -132,7 +152,6 @@ function onWindowResize() {
     camera.updateProjectionMatrix();
 
     renderer.setSize(window.innerWidth, window.innerHeight);
-
 }
 
 function onDocumentMouseMove(event) {
@@ -141,7 +160,6 @@ function onDocumentMouseMove(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     //
-
     raycaster.setFromCamera(mouse, camera);
 
     if (SELECTED) {
@@ -238,6 +256,6 @@ function makeJacobian(joints) {
             jacobian = jacobian.augment(tempM);
         }
     }
-
+    return jacobian;
     console.log(jacobian);
 }
