@@ -114,19 +114,16 @@ function init() {
     window.addEventListener('resize', onWindowResize, false);
 
 }
-    
-function initArms() {
+
+function updateArms(x, y) {
     for (var i = 0; i < arms.length; i++) {
         var vertices = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 10, 0), new THREE.Vector3(0, 20, 0)];
         for (var j = 0; j < vertices.length; j++) {
             arms[i].geometry.vertices = vertices[j];
         }
-    arms[i].geometry.verticesNeedUpdate = true;
+        makeJacobian(vertices);
+        arms[i].geometry.verticesNeedUpdate = true;
     }
-}
-function updateArms(x, y) {
-    makeJacobian(vertices);
-    arms[i].geometry.verticesNeedUpdate = true;
 }
 
 /*function calcAngles(armNum) {
