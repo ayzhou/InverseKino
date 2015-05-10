@@ -168,12 +168,8 @@ function updateAngles(matrix, armNum) {
 function calcPseudoInverse(matrix) {
   console.log(matrix);
     var transpose = matrix.dup().transpose();
-    console.log(transpose);
-    var jjt = matrix.dup().multiply(transpose);
-    console.log(jjt);
-    var jjtinv = jjt.inverse();
-    console.log(jjtinv);
-    var pseudoinverse = transpose.multiply(jjtinv);
+    var jjt = transpose.dup().multiply(matrix);
+    var pseudoinverse = jjt.inverse().multiply(transpose);
     //var pseudoinverse = matrix.dup().transpose().multiply((matrix.dup().multiply(matrix.dup().transpose())).inverse());
     return pseudoinverse;
 }
@@ -250,8 +246,6 @@ function onDocumentMouseUp(event) {
     }
 }
 
-//
-
 function animate() {
     requestAnimationFrame(animate);
     render();
@@ -260,22 +254,18 @@ function animate() {
 function render() {
     controls.update();
     renderer.render(scene, camera);
-
 }
 
 function makeJacobian(joints) {
-    console.log(joints);
     var jacobian;
-    var n = joints.length;
     var endEffector = joints[joints.length - 1]; // end effector position
-    // var e = endEffector.clone().sub(s); // desired changed in end effector position
 
-    for (var i = 1; i < n; i++) {
+    for (var i = 0; i < joints.length - 1; i++) {
         var position = joints[i]; // joint position
         var axis = new THREE.Vector3(0,0,1); // axis of rotation (for us, directly out of screen)
-        var q = position.clone().sub(endEffector); // vector from joint position to end effector
+        var q = endEffector.clone().sub(position); // vector from joint position to end effector
         
-        var temp = axis.clone().cross(q);
+        var temp = axis.cross(q);
         var tempM = Matrix.create([[temp.x],[temp.y],[temp.z]]);
 
         if (jacobian == null) {
@@ -286,5 +276,4 @@ function makeJacobian(joints) {
         }
     }
     return jacobian;
-    console.log(jacobian);
 }
