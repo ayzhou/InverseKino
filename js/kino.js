@@ -6,6 +6,8 @@ var arms = [];
 var angles = [];
 var radius = [];
 
+var target;
+
 var raycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2(),
     offset = new THREE.Vector3(),
@@ -56,12 +58,12 @@ function init() {
         color: 0x0000ff
     });
     var geometry = new THREE.Geometry();
-    var hand = new THREE.Vector3(0, 10, 0);
-    var elbow = new THREE.Vector3(10, 0, 0);
     var pivot = new THREE.Vector3(0, 0, 0);
-    geometry.vertices.push(hand);
-    geometry.vertices.push(elbow);
+    var elbow = new THREE.Vector3(10, 0, 0);
+    var hand = new THREE.Vector3(10, 10, 0);
     geometry.vertices.push(pivot);
+    geometry.vertices.push(elbow);
+    geometry.vertices.push(hand);
     var line = new THREE.Line(geometry, material);
     scene.add(line);
     arms.push(line)
@@ -69,7 +71,7 @@ function init() {
     //calc angles
 
     for (var i = 0; i < arms.length; i++) {
-      angles.push(calcAngles(i));
+      angles.push(initAngles(i));
     }
 
     console.log(angles);
@@ -127,18 +129,18 @@ function init() {
 
 }
 
-function updateArms(x, y) {
+function updateArms() {
     for (var i = 0; i < arms.length; i++) {
-        var vertices = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 10, 0), new THREE.Vector3(0, 20, 0)];
-        for (var j = 0; j < vertices.length; j++) {
-            arms[i].geometry.vertices = vertices[j];
-        }
-        makeJacobian(vertices);
+        var vertices = arms[i].geometry.vertices;
+
+        var jacobian = makeJacobian(vertices);
+        console.log(jacobian);
+        updateAngles(jacobian, i);
         arms[i].geometry.verticesNeedUpdate = true;
     }
 }
 
-function calcAngles(armNum) {
+function initAngles(armNum) {
   var vertices = arms[armNum].geometry.vertices;
   var angles = [];
 
@@ -152,8 +154,27 @@ function calcAngles(armNum) {
   return angles;
 }
 
+function updateAngles(matrix, armNum) {
+  var joints = arms[armNum].geometry.vertices;
+
+  var e = $V([target.x - joints[joints.length-1].x, target.y - joints[joints.length-1].y,
+    target.z - joints[joints.length-1].z]);
+
+  var inverse = calcPseudoInverse(matrix);
+  return inverse.multiply(e);
+
+}
+
 function calcPseudoInverse(matrix) {
-    var pseudoinverse = matrix.clone().transpose().multiply(matrix).inverse().multiply(matrix);
+  console.log(matrix);
+    var transpose = matrix.dup().transpose();
+    console.log(transpose);
+    var jjt = matrix.dup().multiply(transpose);
+    console.log(jjt);
+    var jjtinv = jjt.inverse();
+    console.log(jjtinv);
+    var pseudoinverse = transpose.multiply(jjtinv);
+    //var pseudoinverse = matrix.dup().transpose().multiply((matrix.dup().multiply(matrix.dup().transpose())).inverse());
     return pseudoinverse;
 }
 
@@ -175,7 +196,8 @@ function onDocumentMouseMove(event) {
     if (SELECTED) {
         var intersects = raycaster.intersectObject(plane);
         
-        updateArms(intersects[0].point.x, intersects[0].point.y)
+        target = intersects[0].point;
+        updateArms()
         SELECTED.position.copy(intersects[0].point.sub(offset));
         return;
     }
@@ -243,15 +265,12 @@ function render() {
 
 function makeJacobian(joints) {
     console.log(joints);
-
-    var thetas = [];
     var jacobian;
-    var n = 3;
-    var s = new THREE.Vector3(0,0,0); // end effector position
-    var endEffector = new THREE.Vector3(0,0,0); // target position
+    var n = joints.length;
+    var endEffector = joints[joints.length - 1]; // end effector position
     // var e = endEffector.clone().sub(s); // desired changed in end effector position
 
-    for (var i = 0; i < n; i++) {
+    for (var i = 1; i < n; i++) {
         var position = joints[i]; // joint position
         var axis = new THREE.Vector3(0,0,1); // axis of rotation (for us, directly out of screen)
         var q = position.clone().sub(endEffector); // vector from joint position to end effector
