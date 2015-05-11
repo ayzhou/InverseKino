@@ -6,6 +6,7 @@ var arms = [];
 var angles = [];
 var radiuses = [];
 var cylinders = [];
+var spheres = [];
 
 var target;
 
@@ -13,6 +14,8 @@ var raycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2(),
     offset = new THREE.Vector3(),
     INTERSECTED, SELECTED;
+
+var material = new THREE.MeshPhongMaterial( { color: 0x9999ff, specular: 0x009900, shininess: 300, shading: THREE.FlatShading });
 
 init();
 animate();
@@ -56,9 +59,7 @@ function init() {
 
     //add arms
     var joints = [];
-    var material = new THREE.LineBasicMaterial({
-        color: 0x0000ff
-    });
+    // var material = new THREE.MeshPhongMaterial( { color: 0x9999ff, specular: 0x009900, shininess: 300, shading: THREE.FlatShading });
     var geometry = new THREE.Geometry();
     var pivot = new THREE.Vector3(0, 0, 0);
     var elbow = new THREE.Vector3(2, 3, 0);
@@ -88,7 +89,21 @@ function init() {
     }
     // console.log(radiuses);
 
-    //render cylinders
+    // render spheres
+    for (var i = 0; i < arms.length; i++) {
+        var joints = arms[i].geometry.vertices;
+        var jointS = [];
+        for (var j = 1; j < joints.length; j++) {
+            var sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+            var sphere = new THREE.Mesh(sphereGeometry, material);
+            sphere.position.copy(joints[j]);
+            jointS.push(sphere);
+            scene.add(sphere);
+        }
+        spheres.push(jointS);
+    }
+
+    // render cylinders
     for (var i = 0; i < arms.length; i++) {
         var joints = arms[i].geometry.vertices;
         var jointC = [];
@@ -102,16 +117,13 @@ function init() {
 
     //console.log(angles);
 
-    //add sphere
-    // var sphereParent = new THREE.Object3D();
-    // var sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
-    // var sphereMaterial = new THREE.MeshBasicMaterial({
-    //     color: 0xffff00
-    // });
-    // var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    // add sphere
+    var sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
+    var sphere = new THREE.Mesh(sphereGeometry, material);
     // sphereParent.add(sphere);
     // sphereParent.position.set(hand.x, hand.y, hand.z);
-    // scene.add(sphereParent);
+    sphere.position.set(pivot.x, pivot.y, pivot.z);
+    scene.add(sphere);
     // objects.push(sphere);
     plane = new THREE.Mesh(
     new THREE.PlaneBufferGeometry(2000, 2000, 8, 8),
@@ -160,7 +172,7 @@ function cylinderMesh(pointX, pointY, material) {
                 0, 0, 1, 0,
                 0, -1, 0, 0,
                 0, 0, 0, 1));
-            var edgeGeometry = new THREE.CylinderGeometry(.5, .5, direction.length(), 8, 1);
+            var edgeGeometry = new THREE.CylinderGeometry(.2, .4, direction.length(), 8, 1);
             var edge = new THREE.Mesh(edgeGeometry, material);
             edge.applyMatrix(orientation);
             // position based on midpoints - there may be a better solution than this
@@ -185,12 +197,25 @@ function updateArms() {
             scene.remove(cylinders[i][j]);
         }
 
+        for (var j = 0; j < spheres[i].length; j++) {
+            scene.remove(spheres[i][j]);
+        }
+
         var joints = arms[i].geometry.vertices;
         for (var j = 1; j < joints.length; j++) {
             var cylinder = cylinderMesh(joints[j-1], joints[j], arms[i].material);
             scene.add(cylinder);
             cylinders[i][j-1] = cylinder;
+
+            var sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+            var sphere = new THREE.Mesh(sphereGeometry, material);
+            // console.log(joints[j]);
+            sphere.position.copy(joints[j]);
+            // jointS.push(sphere);
+            scene.add(sphere);
+            spheres[i][j-1] = sphere;
         }
+        // spheres.push(jointS);
 
 
     }
@@ -271,7 +296,8 @@ function calcPseudoInverse(matrix) {
   //console.log(matrix);
     var transpose = matrix.dup().transpose();
     var jjt = transpose.dup().multiply(matrix);
-    var dampingFactor = 10;
+    var dampingFactor = 4;
+    // console.log(dampingFactor);
     var identityMatrix = Matrix.I(jjt.cols());
     var pseudoinverse = jjt.add(identityMatrix.multiply(dampingFactor
         *dampingFactor)).inverse().multiply(transpose);
