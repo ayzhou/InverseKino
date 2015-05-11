@@ -83,7 +83,7 @@ function init() {
     for (var i = 0; i < arms.length; i++) {
         radiuses.push(calcRadiuses(i));
     }
-    console.log(radiuses);
+    // console.log(radiuses);
 
     //console.log(angles);
 
@@ -172,6 +172,10 @@ function updateVertices(deltaAngles, armNum) {
 
     for (var i = 0; i < thisAngles.length; i++) {
         thisAngles[i] += deltaAngles.e(i+1);
+        if (i != 0) {
+            if (thisAngles[i] < -Math.PI/2) thisAngles[i] = -Math.PI/2; 
+            if (thisAngles[i] > Math.PI/2) thisAngles[i] = Math.PI/2; 
+        }
     }
     var base_vertex = thisVertices[0];
     var prev_vertex = new THREE.Vector3(1, 0, 0);
