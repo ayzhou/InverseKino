@@ -4,7 +4,7 @@ var objects = [],
     plane;
 var arms = [];
 var angles = [];
-var radius = [];
+var radiuses = [];
 
 var target;
 
@@ -74,7 +74,13 @@ function init() {
       angles.push(initAngles(i));
     }
 
-    console.log(angles);
+    //init radiuses
+    for (var i = 0; i < arms.length; i++) {
+        radiuses.push(calcRadiuses(i));
+    }
+    console.log(radiuses);
+
+    //console.log(angles);
 
     //add sphere
     var sphereParent = new THREE.Object3D();
@@ -134,8 +140,10 @@ function updateArms() {
         var vertices = arms[i].geometry.vertices;
 
         var jacobian = makeJacobian(vertices);
-        console.log(jacobian);
-        updateAngles(jacobian, i);
+        //console.log(jacobian);
+        var deltaAngles = updateAngles(jacobian, i);
+        //console.log(deltaAngles);
+        updateVertices(deltaAngles, i);
         arms[i].geometry.verticesNeedUpdate = true;
     }
 }
@@ -154,6 +162,47 @@ function initAngles(armNum) {
   return angles;
 }
 
+function updateVertices(deltaAngles, armNum) {
+    var thisAngles = angles[armNum];
+    var thisVertices = arms[armNum].geometry.vertices;
+    //console.log(deltaAngles);
+    //console.log(thisAngles);
+
+    for (var i = 0; i < thisAngles.length; i++) {
+        thisAngles[i] += deltaAngles.e(i+1);
+    }
+    var base_vertex = thisVertices[0];
+    var prev_vertex = new THREE.Vector3(1, 0, 0);
+    var anglesum = 0;
+
+    for (var i = 1; i < thisVertices.length; i++) {
+
+        var theta = thisAngles[i-1];
+        var rotationMatrix = new THREE.Matrix3();
+        rotationMatrix.set(Math.cos(theta), -Math.sin(theta), 0, Math.sin(theta),
+                Math.cos(theta), 0, 0, 0, 1);
+       //console.log(rotationMatrix);
+        var scalar = radiuses[armNum][i-1];
+
+        thisVertices[i] = prev_vertex.applyMatrix3(rotationMatrix).multiplyScalar(scalar).add(base_vertex);
+        base_vertex = thisVertices[i];
+        prev_vertex = thisVertices[i].clone().sub(thisVertices[i-1]).normalize();
+    }
+
+    angles[armNum] = thisAngles;
+    arms[armNum].geometry.vertices = thisVertices;
+
+}
+
+function calcRadiuses(armNum) {
+    var vertices = arms[armNum].geometry.vertices;
+    var radius = []
+    for (var i = 1; i < vertices.length; i++) {
+        radius.push(vertices[i].distanceTo(vertices[i-1]));
+    }
+    return radius;
+}
+
 function updateAngles(matrix, armNum) {
   var joints = arms[armNum].geometry.vertices;
 
@@ -166,7 +215,7 @@ function updateAngles(matrix, armNum) {
 }
 
 function calcPseudoInverse(matrix) {
-  console.log(matrix);
+  //console.log(matrix);
     var transpose = matrix.dup().transpose();
     var jjt = transpose.dup().multiply(matrix);
     var pseudoinverse = jjt.inverse().multiply(transpose);
