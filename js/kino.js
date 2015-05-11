@@ -25,7 +25,7 @@ function init() {
     camera.position.z = 20;
 
     controls = new THREE.TrackballControls(camera);
-    controls.rotateSpeed = 1.0;
+    controls.rotateSpeed = 0;
     controls.zoomSpeed = 1.2;
     controls.panSpeed = 0.8;
     controls.noZoom = false;
@@ -59,10 +59,15 @@ function init() {
     });
     var geometry = new THREE.Geometry();
     var pivot = new THREE.Vector3(0, 0, 0);
-    var elbow = new THREE.Vector3(10, 0, 0);
-    var hand = new THREE.Vector3(10, 10, 0);
+    var elbow = new THREE.Vector3(2, 3, 0);
+    var elbow1 = new THREE.Vector3(5, 4, 0);
+    var elbow2 = new THREE.Vector3(6, 7, 0);
+    var hand = new THREE.Vector3(10, 8, 0);
+
     geometry.vertices.push(pivot);
     geometry.vertices.push(elbow);
+    geometry.vertices.push(elbow1);
+    geometry.vertices.push(elbow2);
     geometry.vertices.push(hand);
     var line = new THREE.Line(geometry, material);
     scene.add(line);
@@ -126,9 +131,6 @@ function init() {
 
 
     renderer.domElement.addEventListener('mousemove', onDocumentMouseMove, false);
-    renderer.domElement.addEventListener('mousedown', onDocumentMouseDown, false);
-    renderer.domElement.addEventListener('mouseup', onDocumentMouseUp, false);
-
     //
 
     window.addEventListener('resize', onWindowResize, false);
@@ -218,7 +220,10 @@ function calcPseudoInverse(matrix) {
   //console.log(matrix);
     var transpose = matrix.dup().transpose();
     var jjt = transpose.dup().multiply(matrix);
-    var pseudoinverse = jjt.inverse().multiply(transpose);
+    var dampingFactor = 10;
+    var identityMatrix = Matrix.I(jjt.cols());
+    var pseudoinverse = jjt.add(identityMatrix.multiply(dampingFactor
+        *dampingFactor)).inverse().multiply(transpose);
     //var pseudoinverse = matrix.dup().transpose().multiply((matrix.dup().multiply(matrix.dup().transpose())).inverse());
     return pseudoinverse;
 }
@@ -238,62 +243,14 @@ function onDocumentMouseMove(event) {
     //
     raycaster.setFromCamera(mouse, camera);
 
-    if (SELECTED) {
-        var intersects = raycaster.intersectObject(plane);
+    var intersects = raycaster.intersectObject(plane);
         
-        target = intersects[0].point;
-        updateArms()
-        SELECTED.position.copy(intersects[0].point.sub(offset));
-        return;
-    }
-
-    var intersects = raycaster.intersectObjects(objects);
-
-    if (intersects.length > 0) {
-
-        if (INTERSECTED != intersects[0].object) {
-
-            if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
-
-            INTERSECTED = intersects[0].object;
-            INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
-
-            plane.position.copy(INTERSECTED.position);
-            plane.lookAt(camera.position);
-        }
-        container.style.cursor = 'pointer';
-
-    } else {
-        if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
-        INTERSECTED = null;
-        container.style.cursor = 'auto';
-    }
-}
-
-function onDocumentMouseDown(event) {
-    event.preventDefault();
-    var vector = new THREE.Vector3(mouse.x, mouse.y, 0.5).unproject(camera);
-    var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
-    var intersects = raycaster.intersectObjects(objects);
-    if (intersects.length > 0) {
-        controls.enabled = false;
-        SELECTED = intersects[0].object;
-        var intersects = raycaster.intersectObject(plane);
-        offset.copy(intersects[0].point).sub(plane.position);
-        container.style.cursor = 'move';
-
-    }
+    target = intersects[0].point;
+    updateArms()
+    return;
 
 }
 
-function onDocumentMouseUp(event) {
-    event.preventDefault();
-    controls.enabled = true;
-    if (INTERSECTED) {
-        plane.position.copy(INTERSECTED.position);
-        SELECTED = null;
-    }
-}
 
 function animate() {
     requestAnimationFrame(animate);
