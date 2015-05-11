@@ -126,7 +126,7 @@ function init() {
     info.style.top = '10px';
     info.style.width = '100%';
     info.style.textAlign = 'center';
-    info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> webgl - draggable cubes';
+    info.innerHTML = '<b>Inverse Kinematics</b><br><em>Alan Zhou (ayzhou), Andrew Kim (ak11), Michael Li (ml13)</em>';
     container.appendChild(info);
 
 
