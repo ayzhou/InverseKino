@@ -88,16 +88,16 @@ function init() {
     //console.log(angles);
 
     //add sphere
-    var sphereParent = new THREE.Object3D();
-    var sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
-    var sphereMaterial = new THREE.MeshBasicMaterial({
-        color: 0xffff00
-    });
-    var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    sphereParent.add(sphere);
-    sphereParent.position.set(hand.x, hand.y, hand.z);
-    scene.add(sphereParent);
-    objects.push(sphere);
+    // var sphereParent = new THREE.Object3D();
+    // var sphereGeometry = new THREE.SphereGeometry(2, 32, 32);
+    // var sphereMaterial = new THREE.MeshBasicMaterial({
+    //     color: 0xffff00
+    // });
+    // var sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    // sphereParent.add(sphere);
+    // sphereParent.position.set(hand.x, hand.y, hand.z);
+    // scene.add(sphereParent);
+    // objects.push(sphere);
     plane = new THREE.Mesh(
     new THREE.PlaneBufferGeometry(2000, 2000, 8, 8),
     new THREE.MeshBasicMaterial({
