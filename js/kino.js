@@ -5,6 +5,7 @@ var objects = [],
 var arms = [];
 var angles = [];
 var radiuses = [];
+var cylinders = [];
 
 var target;
 
@@ -54,6 +55,7 @@ function init() {
     scene.add(light);
 
     //add arms
+    var joints = [];
     var material = new THREE.LineBasicMaterial({
         color: 0x0000ff
     });
@@ -70,8 +72,9 @@ function init() {
     geometry.vertices.push(elbow2);
     geometry.vertices.push(hand);
     var line = new THREE.Line(geometry, material);
-    scene.add(line);
-    arms.push(line)
+    //console.log(line);
+
+    arms.push(line);
 
     //calc angles
 
@@ -83,7 +86,20 @@ function init() {
     for (var i = 0; i < arms.length; i++) {
         radiuses.push(calcRadiuses(i));
     }
-    console.log(radiuses);
+
+    //render cylinders
+    for (var i = 0; i < arms.length; i++) {
+        var joints = arms[i].geometry.vertices;
+        var jointC = [];
+        for (var j = 1; j < joints.length; j++) {
+            var cylinder = cylinderMesh(joints[j-1], joints[j], arms[i].material);
+            jointC.push(cylinder);
+            scene.add(cylinder);
+        }
+        cylinders.push(jointC);
+    }
+
+
 
     //console.log(angles);
 
@@ -137,6 +153,24 @@ function init() {
 
 }
 
+function cylinderMesh(pointX, pointY, material) {
+            var direction = new THREE.Vector3().subVectors(pointY, pointX);
+            var orientation = new THREE.Matrix4();
+            orientation.lookAt(pointX, pointY, new THREE.Object3D().up);
+            orientation.multiply(new THREE.Matrix4().set(1, 0, 0, 0,
+                0, 0, 1, 0,
+                0, -1, 0, 0,
+                0, 0, 0, 1));
+            var edgeGeometry = new THREE.CylinderGeometry(.5, .5, direction.length(), 8, 1);
+            var edge = new THREE.Mesh(edgeGeometry, material);
+            edge.applyMatrix(orientation);
+            // position based on midpoints - there may be a better solution than this
+            edge.position.x = (pointY.x + pointX.x) / 2;
+            edge.position.y = (pointY.y + pointX.y) / 2;
+            edge.position.z = (pointY.z + pointX.z) / 2;
+            return edge;
+}
+
 function updateArms() {
     for (var i = 0; i < arms.length; i++) {
         var vertices = arms[i].geometry.vertices;
@@ -147,6 +181,19 @@ function updateArms() {
         //console.log(deltaAngles);
         updateVertices(deltaAngles, i);
         arms[i].geometry.verticesNeedUpdate = true;
+
+        for (var j = 0; j < cylinders[i].length; j++) {
+            scene.remove(cylinders[i][j]);
+        }
+
+        var joints = arms[i].geometry.vertices;
+        for (var j = 1; j < joints.length; j++) {
+            var cylinder = cylinderMesh(joints[j-1], joints[j], arms[i].material);
+            scene.add(cylinder);
+            cylinders[i][j-1] = cylinder;
+        }
+
+
     }
 }
 
