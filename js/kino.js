@@ -151,17 +151,17 @@ function updateArms() {
 }
 
 function initAngles(armNum) {
-  var vertices = arms[armNum].geometry.vertices;
-  var angles = [];
+    var vertices = arms[armNum].geometry.vertices;
+    var angles = [];
 
-  var prevVector = new THREE.Vector3(1, 0, 0);
-  for (var i = 1; i < vertices.length; i++) {
-    var currentVector = vertices[i].clone().sub(vertices[i-1]).normalize();
-    var angle = prevVector.angleTo(currentVector);
-    angles.push(angle);
-    prevVector = currentVector;
-  }
-  return angles;
+    var prevVector = new THREE.Vector3(1, 0, 0);
+    for (var i = 1; i < vertices.length; i++) {
+        var currentVector = vertices[i].clone().sub(vertices[i-1]).normalize();
+        var angle = prevVector.angleTo(currentVector);
+        angles.push(angle);
+        prevVector = currentVector;
+    }
+    return angles;
 }
 
 function updateVertices(deltaAngles, armNum) {
@@ -181,8 +181,9 @@ function updateVertices(deltaAngles, armNum) {
 
         var theta = thisAngles[i-1];
         var rotationMatrix = new THREE.Matrix3();
-        rotationMatrix.set(Math.cos(theta), -Math.sin(theta), 0, Math.sin(theta),
-                Math.cos(theta), 0, 0, 0, 1);
+        rotationMatrix.set(Math.cos(theta), -Math.sin(theta), 0,
+                           Math.sin(theta), Math.cos(theta), 0,
+                           0, 0, 1);
        //console.log(rotationMatrix);
         var scalar = radiuses[armNum][i-1];
 
