@@ -269,20 +269,21 @@ function updateArms() {
             scene.remove(cylinders[i][j]);
         }
 
-        for (var j = 0; j < spheres[i].length; j++) {
-            scene.remove(spheres[i][j]);
-        }
+        // for (var j = 0; j < spheres[i].length; j++) {
+        //     scene.remove(spheres[i][j]);
+        // }
 
         var joints = arms[i].geometry.vertices;
         for (var j = 1; j < joints.length; j++) {
             var cylinder = cylinderMesh(joints[j-1], joints[j], arms[i].material);
             scene.add(cylinder);
             cylinders[i][j-1] = cylinder;
-            var sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-            var sphere = new THREE.Mesh(sphereGeometry, material);
-            sphere.position.copy(joints[j]);
-            scene.add(sphere);
-            spheres[i][j-1] = sphere;
+            // var sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+            // var sphere = new THREE.Mesh(sphereGeometry, material);
+            // sphere.position.copy(joints[j]);
+            // scene.add(sphere);
+            // spheres[i][j-1] = sphere;
+            spheres[i][j-1].position.copy(joints[j])
             }
         }
     }
@@ -309,6 +310,10 @@ function updateVertices(deltaAngles, armNum) {
 
     for (var i = 0; i < thisAngles.length; i++) {
         thisAngles[i] += deltaAngles.e(i+1);
+        if (i != 0) {
+            if (thisAngles[i] < -Math.PI/2) thisAngles[i] = -Math.PI/2; 
+            if (thisAngles[i] > Math.PI/2) thisAngles[i] = Math.PI/2; 
+        }
     }
     var base_vertex = thisVertices[0];
     var prev_vertex = new THREE.Vector3(1, 0, 0);
