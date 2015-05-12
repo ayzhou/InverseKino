@@ -12,8 +12,14 @@ var dampingOn;
 var texture = THREE.ImageUtils.loadTexture("texture.png");
 texture.wrapS = THREE.RepeatWrapping;
 texture.wrapT = THREE.RepeatWrapping;
-texture.repeat.set( 4, 4 );
+texture.repeat.set( 2, 1 );
 var material = new THREE.MeshPhongMaterial( { color: 0xff69b4, map: texture});
+
+var background = new THREE.ImageUtils.loadTexture("jungle.jpg");
+// texture.wrapS = THREE.RepeatWrapping;
+// texture.wrapT = THREE.RepeatWrapping;
+// texture.repeat.set( 4, 4 );
+// var backgroundmaterial = new THREE.MeshPhongMaterial( { color: 0xff69b4, map: background});
 
 var target;
 
@@ -26,9 +32,9 @@ init();
 console.log(arms);
 animate();
 
-$(document).mousemove(function(e){
-    $("#image").css({left:e.pageX, top:e.pageY});
-});
+// $(document).mousemove(function(e){
+//     $("#image").css({left:e.pageX, top:e.pageY});
+// });
 
 function init() {
 
@@ -239,13 +245,14 @@ function init() {
     // scene.add(sphereParent);
     // objects.push(sphere);
     plane = new THREE.Mesh(
-    new THREE.PlaneBufferGeometry(2000, 2000, 8, 8),
+    new THREE.PlaneBufferGeometry(60, 30, 8, 8),
     new THREE.MeshBasicMaterial({
-        color: 0x000000,
+        color: 0xffffff,
         opacity: 0.25,
-        transparent: true
+        // transparent: true,
+        map: background,
     }));
-    plane.visible = false;
+    plane.visible = true;
     scene.add(plane);
 
     renderer = new THREE.WebGLRenderer({
