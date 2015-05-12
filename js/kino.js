@@ -7,8 +7,9 @@ var angles = [];
 var radiuses = [];
 var cylinders = [];
 var spheres = [];
+var teeths = [];
 
-var material = new THREE.MeshPhongMaterial( { color: 0x9999ff, specular: 0x009900, shininess: 300, shading: THREE.FlatShading });
+var material = new THREE.MeshPhongMaterial( { color: 0xffc0cb, specular: 0x009900, shininess: 300, shading: THREE.FlatShading });
 
 var target;
 
@@ -59,8 +60,8 @@ function init() {
     scene.add(light);
 
     //add arms
-    // var material = new THREE.LineBasicMaterial({
-    //     color: 0x0000ff
+     //var material = new THREE.LineBasicMaterial({
+       //  color: 0x0000ff
     // });
     var geometry = new THREE.Geometry();
     var pivot = new THREE.Vector3(-20, 10, 0);
@@ -99,6 +100,7 @@ function init() {
 
     arms.push(line);
 
+
     var sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
     var sphere = new THREE.Mesh(sphereGeometry, material);
     sphere.position.set(pivot.x, pivot.y, pivot.z);
@@ -119,6 +121,8 @@ function init() {
     var line = new THREE.Line(geometry, material);
 
     arms.push(line);
+
+
     var sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
     var sphere = new THREE.Mesh(sphereGeometry, material);
     sphere.position.set(pivot.x, pivot.y, pivot.z);
@@ -139,10 +143,23 @@ function init() {
     var line = new THREE.Line(geometry, material);
 
     arms.push(line);
+
     var sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
     var sphere = new THREE.Mesh(sphereGeometry, material);
     sphere.position.set(pivot.x, pivot.y, pivot.z);
     scene.add(sphere);
+
+    for (var i = 0; i < arms.length; i++) {
+        var vertices = arms[i].geometry.vertices;
+        var texture = new THREE.ImageUtils.loadTexture('tooth.jpg');
+        //var material = new THREE.MeshPhongMaterial({
+            //map: texture
+        //});
+        var lastLineSegment = vertices[vertices.length-1].clone().sub(vertices[vertices.length-2]);
+        var teeth = cylinderMesh(vertices[vertices.length-1], vertices[vertices.length-1].clone().add(lastLineSegment), material);
+        scene.add(teeth);
+        teeths.push(teeth);
+    }
 
     //calc angles
 
@@ -267,6 +284,7 @@ function updateArms() {
 
         for (var j = 0; j < cylinders[i].length; j++) {
             scene.remove(cylinders[i][j]);
+            scene.remove(teeths[i]);
         }
 
         // for (var j = 0; j < spheres[i].length; j++) {
@@ -284,16 +302,18 @@ function updateArms() {
             // scene.add(sphere);
             // spheres[i][j-1] = sphere;
             spheres[i][j-1].position.copy(joints[j])
-            }
+            
         }
         var vertices = arms[i].geometry.vertices;
         var texture = new THREE.ImageUtils.loadTexture('tooth.jpg');
-        var material = new THREE.MeshPhongMaterial({
+        var material1 = new THREE.MeshPhongMaterial({
             map: texture
-        })
-        var lastLineSegment = vertices[vertices.length-1].clone().sub(vertices[vertices.length-2]);
-        var teeth = cylinderMesh(joints[joints.length-1], joints[joints.length-1].clone().add(lastLineSegment), material);
+        });
+        var lastLineSegment = vertices[vertices.length-1].clone().sub(vertices[vertices.length-2]).normalize();
+        var teeth = cylinderMesh(vertices[vertices.length-1], vertices[vertices.length-1].clone().add(lastLineSegment), material1);
         scene.add(teeth);
+        teeths[i] = teeth;
+    }
 
     }
 
