@@ -18,6 +18,7 @@ var mouse = new THREE.Vector2(),
 var material = new THREE.MeshPhongMaterial( { color: 0x9999ff, specular: 0x009900, shininess: 300, shading: THREE.FlatShading });
 
 init();
+console.log(arms);
 animate();
 
 function init() {
