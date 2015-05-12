@@ -239,6 +239,14 @@ function updateArms() {
             scene.add(cylinder);
             cylinders[i][j-1] = cylinder;
         }
+        var vertices = arms[i].geometry.vertices;
+        var texture = new THREE.ImageUtils.loadTexture('tooth.jpg');
+        var material = new THREE.MeshPhongMaterial({
+            map: texture
+        })
+        var lastLineSegment = vertices[vertices.length-1].clone().sub(vertices[vertices.length-2]);
+        var teeth = cylinderMesh(joints[joints.length-1], joints[joints.length-1].clone().add(lastLineSegment), material);
+        scene.add(teeth);
 
 
     }
