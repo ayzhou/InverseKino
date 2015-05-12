@@ -9,8 +9,11 @@ var cylinders = [];
 var spheres = [];
 var teeths = [];
 var dampingOn;
-
-var material = new THREE.MeshPhongMaterial( { color: 0xff69b4});
+var texture = THREE.ImageUtils.loadTexture("texture.png");
+texture.wrapS = THREE.RepeatWrapping;
+texture.wrapT = THREE.RepeatWrapping;
+texture.repeat.set( 4, 4 );
+var material = new THREE.MeshPhongMaterial( { color: 0xff69b4, map: texture});
 
 var target;
 
