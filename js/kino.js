@@ -6,6 +6,9 @@ var arms = [];
 var angles = [];
 var radiuses = [];
 var cylinders = [];
+var spheres = [];
+
+var material = new THREE.MeshPhongMaterial( { color: 0x9999ff, specular: 0x009900, shininess: 300, shading: THREE.FlatShading });
 
 var target;
 
@@ -56,9 +59,9 @@ function init() {
     scene.add(light);
 
     //add arms
-    var material = new THREE.LineBasicMaterial({
-        color: 0x0000ff
-    });
+    // var material = new THREE.LineBasicMaterial({
+    //     color: 0x0000ff
+    // });
     var geometry = new THREE.Geometry();
     var pivot = new THREE.Vector3(-20, 10, 0);
     var elbow = new THREE.Vector3(-18, 9, 0);
@@ -74,6 +77,11 @@ function init() {
     var line = new THREE.Line(geometry, material);
 
     arms.push(line);
+
+    var sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
+    var sphere = new THREE.Mesh(sphereGeometry, material);
+    sphere.position.set(pivot.x, pivot.y, pivot.z);
+    scene.add(sphere);
 
     var geometry = new THREE.Geometry();
     var pivot = new THREE.Vector3(20, 10, 0);
@@ -91,6 +99,11 @@ function init() {
 
     arms.push(line);
 
+    var sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
+    var sphere = new THREE.Mesh(sphereGeometry, material);
+    sphere.position.set(pivot.x, pivot.y, pivot.z);
+    scene.add(sphere);
+
     var geometry = new THREE.Geometry();
     var pivot = new THREE.Vector3(-20, -10, 0);
     var elbow = new THREE.Vector3(-18, -9, 0);
@@ -106,6 +119,11 @@ function init() {
     var line = new THREE.Line(geometry, material);
 
     arms.push(line);
+    var sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
+    var sphere = new THREE.Mesh(sphereGeometry, material);
+    sphere.position.set(pivot.x, pivot.y, pivot.z);
+    scene.add(sphere);
+
     var geometry = new THREE.Geometry();
     var pivot = new THREE.Vector3(20, -10, 0);
     var elbow = new THREE.Vector3(18, -9, 0);
@@ -121,6 +139,10 @@ function init() {
     var line = new THREE.Line(geometry, material);
 
     arms.push(line);
+    var sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
+    var sphere = new THREE.Mesh(sphereGeometry, material);
+    sphere.position.set(pivot.x, pivot.y, pivot.z);
+    scene.add(sphere);
 
     //calc angles
 
@@ -143,6 +165,20 @@ function init() {
             scene.add(cylinder);
         }
         cylinders.push(jointC);
+    }
+
+    // render spheres
+    for (var i = 0; i < arms.length; i++) {
+        var joints = arms[i].geometry.vertices;
+        var jointS = [];
+        for (var j = 1; j < joints.length; j++) {
+            var sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+            var sphere = new THREE.Mesh(sphereGeometry, material);
+            sphere.position.copy(joints[j]);
+            jointS.push(sphere);
+            scene.add(sphere);
+        }
+        spheres.push(jointS);
     }
 
 
@@ -207,7 +243,7 @@ function cylinderMesh(pointX, pointY, material) {
                 0, 0, 1, 0,
                 0, -1, 0, 0,
                 0, 0, 0, 1));
-            var edgeGeometry = new THREE.CylinderGeometry(.5, .5, direction.length(), 8, 1);
+            var edgeGeometry = new THREE.CylinderGeometry(.2, .4, direction.length(), 8, 1);
             var edge = new THREE.Mesh(edgeGeometry, material);
             edge.applyMatrix(orientation);
             
@@ -233,11 +269,22 @@ function updateArms() {
             scene.remove(cylinders[i][j]);
         }
 
+        // for (var j = 0; j < spheres[i].length; j++) {
+        //     scene.remove(spheres[i][j]);
+        // }
+
         var joints = arms[i].geometry.vertices;
         for (var j = 1; j < joints.length; j++) {
             var cylinder = cylinderMesh(joints[j-1], joints[j], arms[i].material);
             scene.add(cylinder);
             cylinders[i][j-1] = cylinder;
+            // var sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+            // var sphere = new THREE.Mesh(sphereGeometry, material);
+            // sphere.position.copy(joints[j]);
+            // scene.add(sphere);
+            // spheres[i][j-1] = sphere;
+            spheres[i][j-1].position.copy(joints[j])
+            }
         }
         var vertices = arms[i].geometry.vertices;
         var texture = new THREE.ImageUtils.loadTexture('tooth.jpg');
@@ -248,9 +295,7 @@ function updateArms() {
         var teeth = cylinderMesh(joints[joints.length-1], joints[joints.length-1].clone().add(lastLineSegment), material);
         scene.add(teeth);
 
-
     }
-}
 
 function initAngles(armNum) {
     var vertices = arms[armNum].geometry.vertices;
@@ -274,6 +319,10 @@ function updateVertices(deltaAngles, armNum) {
 
     for (var i = 0; i < thisAngles.length; i++) {
         thisAngles[i] += deltaAngles.e(i+1);
+        if (i != 0) {
+            if (thisAngles[i] < -Math.PI/2) thisAngles[i] = -Math.PI/2; 
+            if (thisAngles[i] > Math.PI/2) thisAngles[i] = Math.PI/2; 
+        }
     }
     var base_vertex = thisVertices[0];
     var prev_vertex = new THREE.Vector3(1, 0, 0);
