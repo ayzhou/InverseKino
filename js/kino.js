@@ -8,8 +8,9 @@ var radiuses = [];
 var cylinders = [];
 var spheres = [];
 var teeths = [];
+var dampingOn;
 
-var material = new THREE.MeshPhongMaterial( { color: 0xffc0cb, specular: 0x009900, shininess: 300, shading: THREE.FlatShading });
+var material = new THREE.MeshPhongMaterial( { color: 0xff69b4});
 
 var target;
 
@@ -22,7 +23,17 @@ init();
 console.log(arms);
 animate();
 
+$(document).mousemove(function(e){
+    $("#image").css({left:e.pageX, top:e.pageY});
+});
+
 function init() {
+
+    dampingOn = true;
+    $('#button').bind( 'click', function() {
+        dampingOn = !dampingOn;
+        console.log("hello");
+    });
 
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -151,14 +162,25 @@ function init() {
 
     for (var i = 0; i < arms.length; i++) {
         var vertices = arms[i].geometry.vertices;
-        var texture = new THREE.ImageUtils.loadTexture('tooth.jpg');
-        //var material = new THREE.MeshPhongMaterial({
-            //map: texture
-        //});
-        var lastLineSegment = vertices[vertices.length-1].clone().sub(vertices[vertices.length-2]);
-        var teeth = cylinderMesh(vertices[vertices.length-1], vertices[vertices.length-1].clone().add(lastLineSegment), material);
-        scene.add(teeth);
-        teeths.push(teeth);
+
+        var object = new THREE.Object3D();
+        var geometry = new THREE.CylinderGeometry(.01, .15, 5, 8);
+
+        for (var j = 0; j < 6; j++) {
+
+            var cylinder = new THREE.Mesh(geometry, material);
+            cylinder.position.copy(new THREE.Vector3(Math.cos(j*(2*Math.PI/6))/4, Math.sin(j*(2*Math.PI/6))/4, 0));
+            object.add(cylinder);
+        }
+        var lastLineSegment = vertices[vertices.length-1].clone().sub(vertices[vertices.length-2]).normalize();
+        var theta = new THREE.Vector3(0, 1, 0).angleTo(lastLineSegment);
+        if (lastLineSegment.x > 0) {
+            theta += (Math.PI-theta)*2
+        }
+        object.rotateOnAxis(new THREE.Vector3(0, 0, 1), theta);
+        object.position.copy(vertices[vertices.length-1]);
+        scene.add(object);
+        teeths.push(object);
     }
 
     //calc angles
@@ -302,17 +324,27 @@ function updateArms() {
             // scene.add(sphere);
             // spheres[i][j-1] = sphere;
             spheres[i][j-1].position.copy(joints[j])
-            
         }
         var vertices = arms[i].geometry.vertices;
-        var texture = new THREE.ImageUtils.loadTexture('tooth.jpg');
-        var material1 = new THREE.MeshPhongMaterial({
-            map: texture
-        });
+
+        var object = new THREE.Object3D();
+        var geometry = new THREE.CylinderGeometry(.01, .15, 5, 8);
+
+        for (var j = 0; j < 6; j++) {
+
+            var cylinder = new THREE.Mesh(geometry, material);
+            cylinder.position.copy(new THREE.Vector3(Math.cos(j*(2*Math.PI/6))/4, Math.sin(j*(2*Math.PI/6))/4, 0));
+            object.add(cylinder);
+        }
         var lastLineSegment = vertices[vertices.length-1].clone().sub(vertices[vertices.length-2]).normalize();
-        var teeth = cylinderMesh(vertices[vertices.length-1], vertices[vertices.length-1].clone().add(lastLineSegment), material1);
-        scene.add(teeth);
-        teeths[i] = teeth;
+        var theta = new THREE.Vector3(0, 1, 0).angleTo(lastLineSegment);
+        if (lastLineSegment.x > 0) {
+            theta += (Math.PI-theta)*2;
+        }
+        object.rotateOnAxis(new THREE.Vector3(0, 0, 1), theta);
+        object.position.copy(vertices[vertices.length-1]);
+        scene.add(object);
+        teeths[i] = object;
     }
 
     }
@@ -337,8 +369,10 @@ function updateVertices(deltaAngles, armNum) {
     //console.log(deltaAngles);
     //console.log(thisAngles);
 
+
     for (var i = 0; i < thisAngles.length; i++) {
         thisAngles[i] += deltaAngles.e(i+1);
+
         if (i != 0) {
             if (thisAngles[i] < -Math.PI/2) thisAngles[i] = -Math.PI/2; 
             if (thisAngles[i] > Math.PI/2) thisAngles[i] = Math.PI/2; 
@@ -395,7 +429,7 @@ function calcPseudoInverse(matrix) {
     var dampingFactor = 20;
     var identityMatrix = Matrix.I(jjt.cols());
     var pseudoinverse = jjt.add(identityMatrix.multiply(dampingFactor
-        *dampingFactor)).inverse().multiply(transpose);
+    *dampingFactor)).inverse().multiply(transpose);
     //var pseudoinverse = matrix.dup().transpose().multiply((matrix.dup().multiply(matrix.dup().transpose())).inverse());
     return pseudoinverse;
 }
