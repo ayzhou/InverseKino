@@ -6,6 +6,9 @@ var arms = [];
 var angles = [];
 var radiuses = [];
 var cylinders = [];
+var spheres = [];
+
+var material = new THREE.MeshPhongMaterial( { color: 0x9999ff, specular: 0x009900, shininess: 300, shading: THREE.FlatShading });
 
 var target;
 
@@ -56,9 +59,9 @@ function init() {
     scene.add(light);
 
     //add arms
-    var material = new THREE.LineBasicMaterial({
-        color: 0x0000ff
-    });
+    // var material = new THREE.LineBasicMaterial({
+    //     color: 0x0000ff
+    // });
     var geometry = new THREE.Geometry();
     var pivot = new THREE.Vector3(-20, 10, 0);
     var elbow = new THREE.Vector3(-18, 9, 0);
@@ -145,6 +148,25 @@ function init() {
         cylinders.push(jointC);
     }
 
+    // render spheres
+    for (var i = 0; i < arms.length; i++) {
+        var joints = arms[i].geometry.vertices;
+        var jointS = [];
+        for (var j = 1; j < joints.length; j++) {
+            var sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+            var sphere = new THREE.Mesh(sphereGeometry, material);
+            sphere.position.copy(joints[j]);
+            jointS.push(sphere);
+            scene.add(sphere);
+        }
+        spheres.push(jointS);
+    }
+
+    var sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
+    var sphere = new THREE.Mesh(sphereGeometry, material);
+    sphere.position.set(pivot.x, pivot.y, pivot.z);
+    scene.add(sphere);
+
 
 
     //console.log(angles);
@@ -207,7 +229,7 @@ function cylinderMesh(pointX, pointY, material) {
                 0, 0, 1, 0,
                 0, -1, 0, 0,
                 0, 0, 0, 1));
-            var edgeGeometry = new THREE.CylinderGeometry(.5, .5, direction.length(), 8, 1);
+            var edgeGeometry = new THREE.CylinderGeometry(.2, .4, direction.length(), 8, 1);
             var edge = new THREE.Mesh(edgeGeometry, material);
             edge.applyMatrix(orientation);
             
@@ -233,14 +255,22 @@ function updateArms() {
             scene.remove(cylinders[i][j]);
         }
 
+        for (var j = 0; j < spheres[i].length; j++) {
+            scene.remove(spheres[i][j]);
+        }
+
         var joints = arms[i].geometry.vertices;
         for (var j = 1; j < joints.length; j++) {
             var cylinder = cylinderMesh(joints[j-1], joints[j], arms[i].material);
             scene.add(cylinder);
             cylinders[i][j-1] = cylinder;
+            var sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+            var sphere = new THREE.Mesh(sphereGeometry, material);
+            sphere.position.copy(joints[j]);
+            scene.add(sphere);
+            spheres[i][j-1] = sphere;
+            }
         }
-
-
     }
 }
 
@@ -315,7 +345,7 @@ function calcPseudoInverse(matrix) {
   //console.log(matrix);
     var transpose = matrix.dup().transpose();
     var jjt = transpose.dup().multiply(matrix);
-    var dampingFactor = 20;
+    var dampingFactor = 4;
     var identityMatrix = Matrix.I(jjt.cols());
     var pseudoinverse = jjt.add(identityMatrix.multiply(dampingFactor
         *dampingFactor)).inverse().multiply(transpose);
